@@ -1,0 +1,61 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+front-end/.pnp
+.pnp.js
+.env
+# testing
+front-end/coverage
+
+# production
+front-end/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# reactjs gitignore
+
+scripts/flow/*/.flowconfig
+.flowconfig
+*~
+*.pyc
+.grunt
+_SpecRunner.html
+__benchmarks__
+front-end/build/
+front-end/remote-repo/
+front-end/coverage/
+.module-cache
+front-end/fixtures/dom/public/react-dom.js
+front-end/fixtures/dom/public/react.js
+front-end/test/the-files-to-test.generated.js
+*.log*
+chrome-user-data
+*.sublime-project
+*.sublime-workspace
+.idea
+*.iml
+.vscode
+*.swp
+*.swo
+
+front-end/packages/react-devtools-core/dist
+front-end/packages/react-devtools-extensions/chrome/build
+front-end/packages/react-devtools-extensions/chrome/*.crx
+front-end/packages/react-devtools-extensions/chrome/*.pem
+front-end/packages/react-devtools-extensions/firefox/build
+front-end/packages/react-devtools-extensions/firefox/*.xpi
+front-end/packages/react-devtools-extensions/firefox/*.pem
+front-end/packages/react-devtools-extensions/shared/build
+front-end/packages/react-devtools-extensions/.tempUserDataDir
+front-end/packages/react-devtools-inline/dist
+front-end/packages/react-devtools-shell/dist
+front-end/packages/react-devtools-timeline/dist
