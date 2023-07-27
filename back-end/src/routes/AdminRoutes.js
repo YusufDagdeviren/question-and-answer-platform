@@ -2,15 +2,16 @@ const express = require("express");
 const router = express.Router();
 const AdminController = require("../controllers/AdminController");
 const { isAdmin } = require("../middlewares/auth");
+const { doubleCsrfProtection } = require("../csrf-settings/csrf")
 
-router.post("/register", isAdmin, AdminController.register);
+router.post("/register", isAdmin, doubleCsrfProtection, AdminController.register);
 
-router.get("/users", isAdmin, AdminController.getUsers);
+router.get("/users", isAdmin, doubleCsrfProtection, AdminController.getUsers);
 
 router
     .route("/user/:id")
-    .delete(isAdmin, AdminController.deleteUser)
-    .put(isAdmin, AdminController.updateUser)
-    .get(isAdmin, AdminController.getUser);
+    .delete(isAdmin, doubleCsrfProtection, AdminController.deleteUser)
+    .put(isAdmin, doubleCsrfProtection, AdminController.updateUser)
+    .get(isAdmin, doubleCsrfProtection, AdminController.getUser);
 
 module.exports = router;

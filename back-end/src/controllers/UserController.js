@@ -2,7 +2,7 @@ const Answer = require("../models/answer");
 const Question = require("../models/question");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
-
+const { generateToken } = require("../csrf-settings/csrf")
 const createAnswer = function (res, status, content) {
     res.status(status).json(content);
 }
@@ -27,7 +27,8 @@ const login = async function (req, res) {
                     req.session.isAuth = 1;
                     req.session.authority = user.user_authority;
                     req.session.userId = user.id;
-                    createAnswer(res, 200, { "message": req.session });
+                    const csrfToken = generateToken(res,req);
+                    createAnswer(res, 200, { "token": csrfToken });
                 } else {
                     createAnswer(res, 401, { "message": "Wrong Password" });
                 }
@@ -44,7 +45,7 @@ const logout = async function (req, res) {
         return createAnswer(res, 200, { "message": "logout success" });
 
     } catch (error) {
-        console.log(error);
+        createAnswer(res,400,error);
     }
 }
 const askQuestion = async function (req, res) {
@@ -61,7 +62,8 @@ const askQuestion = async function (req, res) {
                 question_image: question_image,
                 userId: userid
             })
-            createAnswer(res, 200, { "message": "question created" })
+            const csrfToken = generateToken(res,req);
+            createAnswer(res, 200, { "token": csrfToken })
         } else {
             createAnswer(res, 404, { "message": "user is not found" })
         }
@@ -85,7 +87,8 @@ const answerQuestion = async function (req, res) {
                         userId: userid,
                         questionId: questionid
                     })
-                    createAnswer(res, 200, { "message": "question answered" });
+                    const csrfToken = generateToken(res,req);
+                    createAnswer(res, 200, { "token": csrfToken })
                 } else {
                     createAnswer(res, 400, { "message": "the questioner cannot answer" });
                 }
@@ -149,7 +152,8 @@ const upvoteAnswer = async function (req, res) {
             if (question.dataValues.userId == userid) {
                 answer.approval = true;
                 await answer.save();
-                createAnswer(res, 201, { "message": "answer confirmed" });
+                const csrfToken = generateToken(res,req);
+                createAnswer(res, 201, { "token": csrfToken })
             } else {
                 createAnswer(res, 400, { "message": "no authorization" });
             }

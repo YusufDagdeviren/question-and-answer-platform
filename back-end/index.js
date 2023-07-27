@@ -10,10 +10,12 @@ app.use(express.urlencoded({ extended: false }));
 const adminRouter = require("./src/routes/AdminRoutes");
 const userRouter = require("./src/routes/UserRoutes");
 // session settings
+const cookieParser = require('cookie-parser');
 const session = require("express-session");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const sequelize = require("./src/clients/db");
 
+app.use(cookieParser());
 app.use(session({
     secret: process.env.SESSION_SECRET_KEY,
     resave: false,

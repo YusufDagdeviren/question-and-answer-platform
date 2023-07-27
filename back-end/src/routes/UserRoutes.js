@@ -2,20 +2,20 @@ const express = require("express");
 const router = express.Router();
 const UserController = require("../controllers/UserController");
 const { authorization } = require("../middlewares/auth");
-
+const { doubleCsrfProtection } = require("../csrf-settings/csrf")
 
 router.post("/login", UserController.login);
 
-router.post("/logout", authorization, UserController.logout);
+router.post("/logout", authorization, doubleCsrfProtection, UserController.logout);
 
-router.post("/askquestion", authorization, UserController.askQuestion);
+router.post("/askquestion", authorization, doubleCsrfProtection, UserController.askQuestion);
 
-router.post("/answerquestion/:questionid", authorization, UserController.answerQuestion);
+router.post("/answerquestion/:questionid", authorization, doubleCsrfProtection, UserController.answerQuestion);
 
-router.get("/getquestions/:userid", authorization, UserController.getQuestions);
+router.get("/getquestions/:userid", authorization, doubleCsrfProtection, UserController.getQuestions);
 
-router.get("/getanswers/:userid", authorization, UserController.getAnswers);
+router.get("/getanswers/:userid", authorization, doubleCsrfProtection, UserController.getAnswers);
 
-router.post("/upvotequestion/:answerid", authorization, UserController.upvoteAnswer);
+router.post("/upvotequestion/:answerid", authorization, doubleCsrfProtection, UserController.upvoteAnswer);
 
 module.exports = router;

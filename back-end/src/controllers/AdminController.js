@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const { generateToken } = require("../csrf-settings/csrf")
 
 const createAnswer = function (res, status, content) {
     res.status(status).json(content);
@@ -17,7 +18,9 @@ const register = async function (req, res) {
                 user_email: user_email,
                 password: await bcrypt.hash(password, 10)
             });
-            createAnswer(res, 201, { "message": "User created" });
+            console.log("hello");
+            const csrfToken = generateToken(res,req);
+            createAnswer(res, 200, { "token": csrfToken });
         } catch (error) {
             createAnswer(res, 500, error);
         }
@@ -37,7 +40,8 @@ const deleteUser = async function (req, res) {
         const user = await User.findByPk(userid);
         if (user) {
             await user.destroy();
-            createAnswer(res, 200, { "message": "User deleted" });
+            const csrfToken = generateToken(res,req);
+            createAnswer(res, 200, { "token": csrfToken });
         } else {
             createAnswer(res, 404, { "message": "User not found" });
         }
@@ -58,7 +62,8 @@ const updateUser = async function (req, res) {
                 user.user_name = user_name;
                 user.user_email = user_email;
                 await user.save();
-                createAnswer(res, 200, { "message": "User updated" });
+                const csrfToken = generateToken(res,req);
+                createAnswer(res, 200, { "token": csrfToken });
             }
         } else {
             createAnswer(res, 404, { "message": "User not found" });
