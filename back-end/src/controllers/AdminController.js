@@ -5,6 +5,7 @@ const createAnswer = function (res, status, content){
 const register = async function (req,res){
     const user_name = req.body.user_name;
     const user_email = req.body.user_email;
+    const password = req.body.password;
     if(!user_name || !user_email){
         createAnswer(res, 400, {"message": "Missing required information"});
     }else{
@@ -13,6 +14,7 @@ const register = async function (req,res){
                 user_name: user_name,
                 user_email: user_email
             });
+            User.setPassword(password);
             createAnswer(res, 201, {"message": "User created"}); 
         } catch (error) {
             createAnswer(res, 500, {"message": "Error creating user"});

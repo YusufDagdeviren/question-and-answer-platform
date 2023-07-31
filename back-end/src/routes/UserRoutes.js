@@ -1,15 +1,19 @@
 const express = require("express");
 const router = express.Router();
+const { authMiddleware } = require("../middleware/Auth")
 const UserController = require("../controllers/UserController");
+router.post("/login", UserController.login);
 
-router.post("/askquestion/:userid", UserController.askQuestion);
+router.post("/logout", authMiddleware, UserController.logout);
 
-router.post("/answerquestion/:userid/:questionid", UserController.answerQuestion);
+router.post("/askquestion/:userid", authMiddleware, UserController.askQuestion);
 
-router.get("/getquestions/:userid", UserController.getQuestions);
+router.post("/answerquestion/:userid/:questionid", authMiddleware, UserController.answerQuestion);
 
-router.get("/getanswers/:userid",UserController.getAnswers);
+router.get("/getquestions/:userid", authMiddleware, UserController.getQuestions);
 
-router.post("/upvotequestion/:userid/:answerid", UserController.upvoteAnswer);
+router.get("/getanswers/:userid", authMiddleware, UserController.getAnswers);
+
+router.post("/upvotequestion/:userid/:answerid", authMiddleware, UserController.upvoteAnswer);
 
 module.exports = router;

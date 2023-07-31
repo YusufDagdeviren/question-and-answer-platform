@@ -18,7 +18,14 @@ const User = sequelize.define("user", {
     number_of_answer : {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    hash: {
+        type : DataTypes.STRING,
+        allowNull: true
+    },
+    salt: {
+        type : DataTypes.STRING,
+        allowNull: true
     }
 });
-
 module.exports = User;

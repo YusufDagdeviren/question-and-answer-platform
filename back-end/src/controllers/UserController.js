@@ -1,8 +1,68 @@
 const Answer = require("../models/answer");
 const Question = require("../models/question");
-const User = require("../models/user")
+const User = require("../models/user");
+const passport = require("passport")
+const { client } = require("../clients/redis");
+const ms = require('ms');
+const moment = require('moment');
+
+const {
+    generateAccessToken,
+    generateRefreshToken,
+    verifyAccessToken,
+    verifyRefreshToken,
+    COOKIE_OPTIONS,
+    setPassword,
+    isPasswordTrue
+    //clearTokens,
+} = require("../functions/token")
+// const expiredAt = moment().add(ms(process.env.ACCESS_TOKEN_LIFE), 'ms').valueOf(); //15 dakikada bir jeton üret
+
 const createAnswer = function (res, status, content) {
     res.status(status).json(content);
+}
+const login = async function (req, res) {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    if (!email || !password) {
+        cevapOlustur(res, 400, { "hata": "email and password required" });
+        return;
+    }
+    else {
+        passport.authenticate("local", async(error, user, info) => {
+            let tokenObj,refresh_token;
+            if (error) {
+                console.log("hata");
+                createAnswer(res, 404, error)
+                return;
+            }
+            if (user) {
+                tokenObj = generateAccessToken(user)
+                refresh_token = generateRefreshToken(user)
+                await client.set(refresh_token,tokenObj.xsrfToken)
+                client.expireAt(refresh_token,moment().add(ms(process.env.REFRESH_TOKEN_LIFE), 'ms').valueOf());
+                res.cookie("refreshToken",refresh_token,COOKIE_OPTIONS);
+                res.cookie("XSRF-TOKEN",tokenObj.xsrfToken)
+                createAnswer(res, 200, { 
+                    "token": tokenObj.token, 
+                    "xsrf-token":tokenObj.xsrfToken
+                })
+            } else {
+                createAnswer(res, 401, info)
+                return;
+            }
+        })(req, res);
+    }
+}
+const logout = async function (req, res) {
+    // try {
+    //     await req.session.destroy();
+    //     return createAnswer(res, 200, { "message": "logout success" });
+
+    // } catch (error) {
+    //     createAnswer(res,400,error);
+    // }
 }
 const askQuestion = async function (req, res) {
     const userid = req.params.userid;
@@ -118,6 +178,8 @@ const upvoteAnswer = async function (req, res) {
     }
 }
 module.exports = {
+    login,
+    logout,
     askQuestion,
     answerQuestion,
     getQuestions,
