@@ -10,6 +10,11 @@ async function data_load(){
             user_email:"test@gmail.com"
         });
         setPassword(user, "13579");
+        const user1 = await User.create({
+            user_name: "Yusuf",
+            user_email:"ddyusufdd@gmail.com"
+        })
+        setPassword(user1,"yusuf2002");
         await Question.create({
             question_title: "Test Question Title",
             question_text: "Test Question",

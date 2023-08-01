@@ -24,7 +24,7 @@ app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter);
 (async () => {
    associations();
-   // await sequelize.sync({ force: true });
+//    await sequelize.sync({ force: true });
 //    await dummy_data();
 })();
 

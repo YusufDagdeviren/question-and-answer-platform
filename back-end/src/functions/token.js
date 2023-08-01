@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const moment = require('moment');
 const ms = require('ms');
 const crypto = require("crypto")
-// const client = require("../clients/redis")
+const { client } = require("../clients/redis")
 const COOKIE_OPTIONS = {
     // domain: "localhost",
     httpOnly: true,
@@ -31,11 +31,8 @@ const generateAccessToken = function (user) {
         expiredAt
     }
 }
-const generateRefreshToken = async function (user) {
-    const id = user.id;
+const generateRefreshToken = function (id) {
     const refresh_token = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.REFRESH_TOKEN_LIFE });
-    // await client.set(id,refresh_token);
-    // client.expireAt(token_key, process.env.REFRESH_TOKEN_LIFE);
     return refresh_token;
 }
 const verifyAccessToken = function (token, xsrfToken = '', cb) {
@@ -45,11 +42,18 @@ const verifyAccessToken = function (token, xsrfToken = '', cb) {
 const verifyRefreshToken = function (refresh_token, cb) {
     jwt.verify(refresh_token, process.env.JWT_SECRET, cb);
 }
-// const clearTokens = async function(id){
-//     await client.del(id);
-//     res.clearCookie('XSRF-TOKEN');
-//     res.clearCookie('refreshToken', COOKIE_OPTIONS);
-// }
+const clearTokens = async function (req, res) {
+    const { signedCookies = {} } = req;
+    const { refreshToken } = signedCookies;
+    try {
+        await client.del(refreshToken);
+        res.clearCookie('XSRF-TOKEN');
+        res.clearCookie('refreshToken', COOKIE_OPTIONS);
+        res.status(200).json({ message: 'Logout succesfull' });
+    } catch (error) {
+        res.status(204).json({ message: 'Logout not succesfull' });
+    }
+}
 
 const setPassword = function (user, password) {
     user.salt = crypto.randomBytes(16).toString("hex")
@@ -67,6 +71,6 @@ module.exports = {
     verifyRefreshToken,
     COOKIE_OPTIONS,
     setPassword,
-    isPasswordTrue
-    //clearTokens,
+    isPasswordTrue,
+    clearTokens
 }

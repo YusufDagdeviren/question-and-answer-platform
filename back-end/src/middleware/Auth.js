@@ -1,11 +1,10 @@
-const client = require("../clients/redis")
+const { client } = require("../clients/redis")
 const { verifyAccessToken } = require("../functions/token")
 const authMiddleware = async function (req, res, next) {
     var token = req.headers["authorization"];
     if (!token) {
         return res.status(401).json({ "message": "unauthorized" });
     }
-    token = token.replace('Bearer ', '');
     const isBlackList = await client.get(`bl_${token}`);
     if (isBlackList) {
         return res.status(401).json({ "message": "token blacklisted" })
@@ -26,6 +25,7 @@ const authMiddleware = async function (req, res, next) {
         }
         else {
             req.user = payload;
+            //console.log(req.user);
             next();
         }
     })

@@ -13,8 +13,8 @@ const {
     verifyRefreshToken,
     COOKIE_OPTIONS,
     setPassword,
-    isPasswordTrue
-    //clearTokens,
+    isPasswordTrue,
+    clearTokens,
 } = require("../functions/token")
 // const expiredAt = moment().add(ms(process.env.ACCESS_TOKEN_LIFE), 'ms').valueOf(); //15 dakikada bir jeton üret
 
@@ -30,23 +30,23 @@ const login = async function (req, res) {
         return;
     }
     else {
-        passport.authenticate("local", async(error, user, info) => {
-            let tokenObj,refresh_token;
+        passport.authenticate("local", async (error, user, info) => {
+            let tokenObj, refresh_token;
             if (error) {
-                console.log("hata");
                 createAnswer(res, 404, error)
                 return;
             }
             if (user) {
                 tokenObj = generateAccessToken(user)
-                refresh_token = generateRefreshToken(user)
-                await client.set(refresh_token,tokenObj.xsrfToken)
-                client.expireAt(refresh_token,moment().add(ms(process.env.REFRESH_TOKEN_LIFE), 'ms').valueOf());
-                res.cookie("refreshToken",refresh_token,COOKIE_OPTIONS);
-                res.cookie("XSRF-TOKEN",tokenObj.xsrfToken)
-                createAnswer(res, 200, { 
-                    "token": tokenObj.token, 
-                    "xsrf-token":tokenObj.xsrfToken
+                refresh_token = generateRefreshToken(user.dataValues.id)
+                await client.set(refresh_token, tokenObj.xsrfToken)
+                const unixTimestamp = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 15; //15 day
+                client.expireAt(refresh_token, new Date(unixTimestamp * 1000));
+                res.cookie("refreshToken", refresh_token, COOKIE_OPTIONS);
+                res.cookie("XSRF-TOKEN", tokenObj.xsrfToken)
+                createAnswer(res, 200, {
+                    "token": tokenObj.token,
+                    "xsrf-token": tokenObj.xsrfToken
                 })
             } else {
                 createAnswer(res, 401, info)
@@ -56,13 +56,7 @@ const login = async function (req, res) {
     }
 }
 const logout = async function (req, res) {
-    // try {
-    //     await req.session.destroy();
-    //     return createAnswer(res, 200, { "message": "logout success" });
-
-    // } catch (error) {
-    //     createAnswer(res,400,error);
-    // }
+    clearTokens(req, res);
 }
 const askQuestion = async function (req, res) {
     const userid = req.params.userid;
@@ -95,7 +89,7 @@ const answerQuestion = async function (req, res) {
         if (user) {
             const question = await Question.findByPk(questionid);
             if (question) {
-                if(question.dataValues.userId != userid) {
+                if (question.dataValues.userId != userid) {
                     await Answer.create({
                         answer_text: req.body.answer_text,
                         answer_image: req.body.answer_image,
@@ -104,7 +98,7 @@ const answerQuestion = async function (req, res) {
                     })
                     createAnswer(res, 200, { "message": "question answered" });
                 } else {
-                    createAnswer(res,400,{"message":"the questioner cannot answer"});
+                    createAnswer(res, 400, { "message": "the questioner cannot answer" });
                 }
             } else {
                 createAnswer(res, 404, { "message": "question is not found" });
@@ -121,35 +115,35 @@ const getQuestions = async function (req, res) {
     const userid = req.params.userid;
     try {
         const user = await User.findAll({
-            attributes: ["id","user_name","user_email","number_of_answer"],
-            include:Question,
-            where:{
+            attributes: ["id", "user_name", "user_email", "number_of_answer"],
+            include: Question,
+            where: {
                 id: userid
             }
         })
-        if(user){
-            createAnswer(res,200,user)
-        }else{
+        if (user) {
+            createAnswer(res, 200, user)
+        } else {
             createAnswer(res, 404, { "message": "user is not found" });
         }
     } catch (error) {
         createAnswer(res, 400, { "message": error });
     }
-    
+
 }
-const getAnswers = async function(req, res){
+const getAnswers = async function (req, res) {
     const userid = req.params.userid;
     try {
         const user = await User.findAll({
-            attributes: ["id","user_name","user_email","number_of_answer"],
-            include:Answer,
-            where:{
+            attributes: ["id", "user_name", "user_email", "number_of_answer"],
+            include: Answer,
+            where: {
                 id: userid
             }
         })
-        if(user){
-            createAnswer(res,200,user)
-        }else{
+        if (user) {
+            createAnswer(res, 200, user)
+        } else {
             createAnswer(res, 404, { "message": "user is not found" });
         }
     } catch (error) {
@@ -161,17 +155,17 @@ const upvoteAnswer = async function (req, res) {
     const answerid = req.params.answerid;
     try {
         const answer = await Answer.findByPk(answerid);
-        if(answer){
+        if (answer) {
             const question = await answer.getQuestion();
-            if(question.dataValues.userId == userid){
+            if (question.dataValues.userId == userid) {
                 answer.approval = true;
                 await answer.save();
-                createAnswer(res,201,{"message":"answer confirmed"});
-            }else{
-                createAnswer(res,400,{"message":"no authorization"});
+                createAnswer(res, 201, { "message": "answer confirmed" });
+            } else {
+                createAnswer(res, 400, { "message": "no authorization" });
             }
-        }else{
-            createAnswer(res,404,{"message":"no answer found"})
+        } else {
+            createAnswer(res, 404, { "message": "no answer found" })
         }
     } catch (error) {
         createAnswer(res, 400, { "message": error });
