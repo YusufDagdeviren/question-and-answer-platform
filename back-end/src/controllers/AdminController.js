@@ -1,4 +1,7 @@
 const User = require("../models/user");
+const {
+    setPassword
+} = require("../functions/token")
 const createAnswer = function (res, status, content){
     res.status(status).json(content);
 }
@@ -6,15 +9,15 @@ const register = async function (req,res){
     const user_name = req.body.user_name;
     const user_email = req.body.user_email;
     const password = req.body.password;
-    if(!user_name || !user_email){
+    if(!user_name || !user_email || !password){
         createAnswer(res, 400, {"message": "Missing required information"});
     }else{
         try {
-            await User.create({
+            const newuser = await User.create({
                 user_name: user_name,
                 user_email: user_email
             });
-            User.setPassword(password);
+            setPassword(newuser, password);
             createAnswer(res, 201, {"message": "User created"}); 
         } catch (error) {
             createAnswer(res, 500, {"message": "Error creating user"});

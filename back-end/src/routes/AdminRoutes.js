@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const AdminController = require("../controllers/AdminController");
+const { authAdminMiddleware } = require("../middleware/Auth")
+router.post("/register", authAdminMiddleware, AdminController.register);
 
-router.post("/register", AdminController.register);
-
-router.get("/users", AdminController.getUsers);
+router.get("/users", authAdminMiddleware, AdminController.getUsers);
 
 router
     .route("/user/:id")
-    .delete(AdminController.deleteUser)
-    .put(AdminController.updateUser)
-    .get(AdminController.getUser);
+    .delete(authAdminMiddleware, AdminController.deleteUser)
+    .put(authAdminMiddleware, AdminController.updateUser)
+    .get(authAdminMiddleware, AdminController.getUser);
 
 module.exports = router;
