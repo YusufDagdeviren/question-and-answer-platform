@@ -3,18 +3,11 @@ const Question = require("../models/question");
 const User = require("../models/user");
 const passport = require("passport")
 const { client } = require("../clients/redis");
-const ms = require('ms');
-const moment = require('moment');
+
 
 const {
     generateAccessToken,
-    generateRefreshToken,
-    verifyAccessToken,
-    verifyRefreshToken,
-    COOKIE_OPTIONS,
-    setPassword,
-    isPasswordTrue,
-    clearTokens,
+    generateRefreshToken
 } = require("../functions/token")
 // const expiredAt = moment().add(ms(process.env.ACCESS_TOKEN_LIFE), 'ms').valueOf(); //15 dakikada bir jeton üret
 
@@ -26,7 +19,7 @@ const login = async function (req, res) {
     const password = req.body.password;
 
     if (!email || !password) {
-        cevapOlustur(res, 400, { "hata": "email and password required" });
+        createAnswer(res, 400, { "error": "email and password required" });
         return;
     }
     else {
@@ -37,17 +30,22 @@ const login = async function (req, res) {
                 return;
             }
             if (user) {
-                tokenObj = generateAccessToken(user)
-                refresh_token = generateRefreshToken(user.dataValues.id)
-                await client.set(refresh_token, tokenObj.xsrfToken)
-                const unixTimestamp = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 15; //15 day
-                client.expireAt(refresh_token, new Date(unixTimestamp * 1000));
-                res.cookie("refreshToken", refresh_token, COOKIE_OPTIONS);
-                res.cookie("XSRF-TOKEN", tokenObj.xsrfToken)
-                createAnswer(res, 200, {
-                    "token": tokenObj.token,
-                    "xsrf-token": tokenObj.xsrfToken
-                })
+                if (await client.get(user.dataValues.id)) {
+                    createAnswer(res, 401, { "error": "the user is logged into the system" })
+                    return;
+                } else {
+                    tokenObj = generateAccessToken(user.dataValues)
+                    refresh_token = generateRefreshToken(user.dataValues.id)
+                    await client.set(user.dataValues.id, refresh_token)
+                    const unixTimestamp = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 15; //15 day
+                    client.expireAt(user.dataValues.id, new Date(unixTimestamp * 1000));
+                    createAnswer(res, 200, {
+                        "token": tokenObj.token,
+                        "refreshToken": refresh_token,
+                        "xsrf-token": tokenObj.xsrfToken,
+                        "expiredAt": tokenObj.expiredAt
+                    })
+                }
             } else {
                 createAnswer(res, 401, info)
                 return;
@@ -55,17 +53,36 @@ const login = async function (req, res) {
         })(req, res);
     }
 }
-const logout = async function (req, res) {
-    clearTokens(req, res);
+
+const createAccessToken = async function(req,res){
+    const user = req.user;
+    await client.set(`bl_${req.headers["authorization"]}`, req.user.id);
+    const unixTimestamp = Math.floor(Date.now() / 1000) + 60 * 15; //15 minute
+    client.expireAt(`bl_${req.headers["authorization"]}`, new Date(unixTimestamp * 1000));
+    const tokenObj = generateAccessToken(user);
+    createAnswer(res,201,{
+        "token": tokenObj.token,
+        "xsrf-token": tokenObj.xsrfToken,
+        "expiredAt": tokenObj.expiredAt
+    });
 }
+
+const logout = async function (req, res) {
+    await client.del(req.user.id);
+    await client.set(`bl_${req.headers["authorization"]}`, req.user.id);
+    const unixTimestamp = Math.floor(Date.now() / 1000) + 60 * 15; //15 minute
+    client.expireAt(`bl_${req.headers["authorization"]}`, new Date(unixTimestamp * 1000));
+    createAnswer(res, 200, { "message": "logout successful" });
+}
+
 const askQuestion = async function (req, res) {
-    const userid = req.params.userid;
+    const userid = req.user.id;
     try {
         const user = await User.findByPk(userid);
         if (user) {
             const question_title = req.body.question_title;
             const question_text = req.body.question_text;
-            const question_image = req.body.question_image;//şimdilik bu şekilde kalsın fs module ile çekilecek burası
+            const question_image = req.body.question_image;
             await Question.create({
                 question_title: question_title,
                 question_text: question_text,
@@ -81,8 +98,9 @@ const askQuestion = async function (req, res) {
     }
 
 }
+
 const answerQuestion = async function (req, res) {
-    const userid = req.params.userid;
+    const userid = req.user.id;
     const questionid = req.params.questionid;
     try {
         const user = await User.findByPk(userid);
@@ -131,6 +149,27 @@ const getQuestions = async function (req, res) {
     }
 
 }
+
+const getMyQuestions = async function (req, res) {
+    const userid = req.user.id;
+    try {
+        const user = await User.findAll({
+            attributes: ["id", "user_name", "user_email", "number_of_answer"],
+            include: Question,
+            where: {
+                id: userid
+            }
+        })
+        if (user) {
+            createAnswer(res, 200, user)
+        } else {
+            createAnswer(res, 404, { "message": "user is not found" });
+        }
+    } catch (error) {
+        createAnswer(res, 400, { "message": error });
+    }
+}
+
 const getAnswers = async function (req, res) {
     const userid = req.params.userid;
     try {
@@ -150,8 +189,29 @@ const getAnswers = async function (req, res) {
         createAnswer(res, 400, { "message": error });
     }
 }
+
+const getMyAnswers = async function (req, res) {
+    const userid = req.user.id;
+    try {
+        const user = await User.findAll({
+            attributes: ["id", "user_name", "user_email", "number_of_answer"],
+            include: Answer,
+            where: {
+                id: userid
+            }
+        })
+        if (user) {
+            createAnswer(res, 200, user)
+        } else {
+            createAnswer(res, 404, { "message": "user is not found" });
+        }
+    } catch (error) {
+        createAnswer(res, 400, { "message": error });
+    }
+}
+
 const upvoteAnswer = async function (req, res) {
-    const userid = req.params.userid;
+    const userid = req.user.id;
     const answerid = req.params.answerid;
     try {
         const answer = await Answer.findByPk(answerid);
@@ -171,6 +231,7 @@ const upvoteAnswer = async function (req, res) {
         createAnswer(res, 400, { "message": error });
     }
 }
+
 module.exports = {
     login,
     logout,
@@ -179,4 +240,7 @@ module.exports = {
     getQuestions,
     getAnswers,
     upvoteAnswer,
+    getMyAnswers,
+    getMyQuestions,
+    createAccessToken
 }

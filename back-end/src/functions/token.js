@@ -3,13 +3,7 @@ const jwt = require("jsonwebtoken");
 const moment = require('moment');
 const ms = require('ms');
 const crypto = require("crypto")
-const { client } = require("../clients/redis")
-const COOKIE_OPTIONS = {
-    // domain: "localhost",
-    httpOnly: true,
-    secure: false,
-    signed: true
-};
+
 const generateAccessToken = function (user) {
     const u = {
         id: user.id,
@@ -42,18 +36,7 @@ const verifyAccessToken = function (token, xsrfToken = '', cb) {
 const verifyRefreshToken = function (refresh_token, cb) {
     jwt.verify(refresh_token, process.env.JWT_SECRET, cb);
 }
-const clearTokens = async function (req, res) {
-    const { signedCookies = {} } = req;
-    const { refreshToken } = signedCookies;
-    try {
-        await client.del(refreshToken);
-        res.clearCookie('XSRF-TOKEN');
-        res.clearCookie('refreshToken', COOKIE_OPTIONS);
-        res.status(200).json({ message: 'Logout succesfull' });
-    } catch (error) {
-        res.status(204).json({ message: 'Logout not succesfull' });
-    }
-}
+
 
 const setPassword = function (user, password) {
     user.salt = crypto.randomBytes(16).toString("hex")
@@ -69,8 +52,6 @@ module.exports = {
     generateRefreshToken,
     verifyAccessToken,
     verifyRefreshToken,
-    COOKIE_OPTIONS,
     setPassword,
     isPasswordTrue,
-    clearTokens
 }
