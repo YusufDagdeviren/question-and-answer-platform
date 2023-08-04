@@ -9,7 +9,6 @@ const {
     generateAccessToken,
     generateRefreshToken
 } = require("../functions/token")
-// const expiredAt = moment().add(ms(process.env.ACCESS_TOKEN_LIFE), 'ms').valueOf(); //15 dakikada bir jeton üret
 
 const createAnswer = function (res, status, content) {
     res.status(status).json(content);
@@ -54,13 +53,13 @@ const login = async function (req, res) {
     }
 }
 
-const createAccessToken = async function(req,res){
+const createAccessToken = async function (req, res) {
     const user = req.user;
     await client.set(`bl_${req.headers["authorization"]}`, req.user.id);
     const unixTimestamp = Math.floor(Date.now() / 1000) + 60 * 15; //15 minute
     client.expireAt(`bl_${req.headers["authorization"]}`, new Date(unixTimestamp * 1000));
     const tokenObj = generateAccessToken(user);
-    createAnswer(res,201,{
+    createAnswer(res, 201, {
         "token": tokenObj.token,
         "xsrf-token": tokenObj.xsrfToken,
         "expiredAt": tokenObj.expiredAt
@@ -218,11 +217,18 @@ const upvoteAnswer = async function (req, res) {
         if (answer) {
             const question = await answer.getQuestion();
             if (question.dataValues.userId == userid) {
-                answer.approval = true;
-                await answer.save();
-                createAnswer(res, 201, { "message": "answer confirmed" });
+                if (answer.dataValues.approval) {
+                    createAnswer(res, 404, { "message": "the answer is already confirmed" })
+                } else {
+                    const answerer = await answer.getUser();
+                    answer.approval = true;
+                    await answer.save();
+                    answerer.number_of_answer += 1;
+                    await answerer.save();
+                    createAnswer(res, 201, { "message": "answer confirmed" });
+                }
             } else {
-                createAnswer(res, 400, { "message": "no authorization" });
+                createAnswer(res, 400, { "message": "unauthorized action" });
             }
         } else {
             createAnswer(res, 404, { "message": "no answer found" })

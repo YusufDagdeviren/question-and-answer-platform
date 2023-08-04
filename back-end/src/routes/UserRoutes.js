@@ -20,6 +20,6 @@ router.get("/getanswers/:userid", authMiddleware, UserController.getAnswers);
 
 router.get("/getmyanswers", authMiddleware, UserController.getMyAnswers);
 
-router.post("/upvotequestion/:answerid", authMiddleware, UserController.upvoteAnswer);
+router.post("/upvoteanswer/:answerid", authMiddleware, UserController.upvoteAnswer);
 
 module.exports = router;

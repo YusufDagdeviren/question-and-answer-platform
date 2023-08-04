@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const moment = require('moment');
 const ms = require('ms');
 const crypto = require("crypto")
+const util = require('util');
 
 const generateAccessToken = function (user) {
     const u = {
@@ -29,12 +30,24 @@ const generateRefreshToken = function (id) {
     const refresh_token = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.REFRESH_TOKEN_LIFE });
     return refresh_token;
 }
-const verifyAccessToken = function (token, xsrfToken = '', cb) {
+const verifyAccessToken = async function (token, xsrfToken = '') {
     const privateKey = process.env.JWT_SECRET + xsrfToken;
-    jwt.verify(token, privateKey, cb);
+    const verifyAsync = util.promisify(jwt.verify);
+    try {
+        const payload = await verifyAsync(token, privateKey);
+        return payload;
+    } catch (error) {
+        throw error;
+    }
 }
-const verifyRefreshToken = function (refresh_token, cb) {
-    jwt.verify(refresh_token, process.env.JWT_SECRET, cb);
+const verifyRefreshToken = async function (refresh_token) {
+    const verifyAsync = util.promisify(jwt.verify);
+    try {
+        const payload = await verifyAsync(refresh_token, process.env.JWT_SECRET);
+        return payload;
+    } catch (error) {
+        throw error;
+    }
 }
 
 
