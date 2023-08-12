@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  database:
+    image: postgres:15
+    restart: always
+    volumes:
+      - backup:/var/lib/postgresql
+    environment:
+      POSTGRES_PASSWORD: 1202deneme1202
+      POSTGRES_DB: webproject
+      POSTGRES_USER: postgres
+    networks:
+      - webnet
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - webnet
+  webservice:
+    image: xsentez/internshipwebproject:latest
+    depends_on:
+      - database
+      - redis
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - webnet
+
+volumes:
+  backup:
+
+networks:
+  webnet:
+    driver: bridge
