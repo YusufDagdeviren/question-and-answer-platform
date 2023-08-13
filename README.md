@@ -25,17 +25,17 @@ Stajım süresince Kurumsal, Adminin kullanıcıları kayıt ettiği, güvenliğ
 3. xsrfToken değerimiz ve JWT_SECRET değerimizin ikisiyle birlikte acessToken oluşturacağız. xsrfToken değeri her acessToken oluşturmada yeniden oluşturulduğu için daha güvenli bir yapı var.
 4. Çıkış yapan kullanıcıların accessToken'ları rediste 15 dakika boyunca blacklistte tutulacak böylece çıkış yapmış kullanıcıların accessTokenları tekrar kullanıma alınamayacak.
 ## Kullanılan Teknolojiler ve Araçlar
-**Back-end:** ExpressJS
-**Veritabanı:** Postgresql
-**Veritabanı ORM:** Sequelize
-**Kimlik Doğrulama, Güvenlik:** JWT, rand-token, crypto
-**Validasyon İşlemleri :** Passport, passport-local
-**Cache Teknolojisi:** Redis
-**Test:** Postman
-**IDE:** Visual Studio Code
-**REST API Client:** Postman
-**Versiyonlama:** Git
-**Container Teknolojisi:** Docker, Docker-compose
+**Back-end:** ExpressJS  
+**Veritabanı:** Postgresql  
+**Veritabanı ORM:** Sequelize  
+**Kimlik Doğrulama, Güvenlik:** JWT, rand-token, crypto  
+**Validasyon İşlemleri :** Passport, passport-local  
+**Cache Teknolojisi:** Redis  
+**Test:** Postman  
+**IDE:** Visual Studio Code  
+**REST API Client:** Postman  
+**Versiyonlama:** Git  
+**Container Teknolojisi:** Docker, Docker-compose  
 
 ## Uygulamanın Kişisel Bilgisayarınıza İndirilmesi
 **Uygulamayı github üzerinden indirip çalıştırmak için öncelikle bilgisarınızda node.js, npm, postgresql ve redisin kurulu olması gerekmektedir.**
