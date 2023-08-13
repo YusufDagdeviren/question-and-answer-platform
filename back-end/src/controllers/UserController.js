@@ -41,7 +41,7 @@ const login = async function (req, res) {
                     createAnswer(res, 200, {
                         "token": tokenObj.token,
                         "refreshToken": refresh_token,
-                        "xsrf-token": tokenObj.xsrfToken,
+                        "xsrfToken": tokenObj.xsrfToken,
                         "expiredAt": tokenObj.expiredAt
                     })
                 }
@@ -61,7 +61,7 @@ const createAccessToken = async function (req, res) {
     const tokenObj = generateAccessToken(user);
     createAnswer(res, 201, {
         "token": tokenObj.token,
-        "xsrf-token": tokenObj.xsrfToken,
+        "xsrfToken": tokenObj.xsrfToken,
         "expiredAt": tokenObj.expiredAt
     });
 }
