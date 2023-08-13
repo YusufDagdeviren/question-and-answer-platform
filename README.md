@@ -1,5 +1,5 @@
 # Question-and-answer-platform
-Süleyman Demirel Üniversitesi Bilgisayar Mühendisliği bölümünde Yazılım stajım için yapmış olduğum bir web uygulaması REST api servisidir.
+Süleyman Demirel Üniversitesi Bilgisayar Mühendisliği bölümünde Yazılım stajım için yapmış olduğum bir web uygulaması rest api servisidir.
 
 ## Web servisinin yapılma amacı
 Stajım süresince Kurumsal, Adminin kullanıcıları kayıt ettiği, güvenliği yüksek seviyede olan, kurum içi soruların gene kurum içinde yanıtlanarak puan sistemi kasıldığı bir web servisi yazmak istedim.
