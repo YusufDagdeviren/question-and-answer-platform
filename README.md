@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+# Question-and-answer-platform
+Süleyman Demirel Üniversitesi Bilgisayar Mühendisliği bölümünde Yazılım stajım için yapmış olduğum bir web uygulaması REST api servisidir.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Web servisinin yapılma amacı
+Stajım süresince Kurumsal, Adminin kullanıcıları kayıt ettiği, güvenliği yüksek seviyede olan, kurum içi soruların gene kurum içinde yanıtlanarak puan sistemi kasıldığı bir web servisi yazmak istedim.
 
-## Available Scripts
+## Web servisinin yaptıkları ve Güvenlik için ekstra yaptıklarım
+### Adminin Yaptıkları:
+- Kullanıcıları sisteme kayıt etmek 
+- Kullanıcıları sistemden silmek
+- Kullanıcı bilgilerini değiştirmek
+- Kullanıcı bilgilerini getirmek
 
-In the project directory, you can run:
+### Kullanıcının Yaptıkları: 
+- Kullanıcı girişi/çıkışı
+- Kullanıcının soru sorması
+- Diğer kullanıcıların sorularına cevap verme
+- Sorularına cevap veren kullanıcıların cevaplarını upvote yapma
+- Kullanıcıların onaylanan cevapları kadar puan kazanması
+- Kullanıcıların diğer kullanıcıların sorularını ve cevaplarını görüntülemesi
 
-### `npm start`
+**Güvenlik için ekstra yaptıklarım:**
+1. AccessToken değeri 15 dakika boyunca kullanılabilir olarak kalacak ve içerisinde userid,authority ve email değerlerini saklayacağız.
+2. RefreshToken değerimiz ise 15 gün rediste aktif olarak tutulacak 15 gün sonunda redisten silinecek. 
+3. xsrfToken değerimiz ve JWT_SECRET değerimizin ikisiyle birlikte acessToken oluşturacağız. xsrfToken değeri her acessToken oluşturmada yeniden oluşturulduğu için daha güvenli bir yapı var.
+4. Çıkış yapan kullanıcıların accessToken'ları rediste 15 dakika boyunca blacklistte tutulacak böylece çıkış yapmış kullanıcıların accessTokenları tekrar kullanıma alınamayacak.
+## Kullanılan Teknolojiler ve Araçlar
+**Back-end:** ExpressJS
+**Veritabanı:** Postgresql
+**Veritabanı ORM:** Sequelize
+**Kimlik Doğrulama, Güvenlik:** JWT, rand-token, crypto
+**Validasyon İşlemleri :** Passport, passport-local
+**Cache Teknolojisi:** Redis
+**Test:** Postman
+**IDE:** Visual Studio Code
+**REST API Client:** Postman
+**Versiyonlama:** Git
+**Container Teknolojisi:** Docker, Docker-compose
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Uygulamanın Kişisel Bilgisayarınıza İndirilmesi
+**Uygulamayı github üzerinden indirip çalıştırmak için öncelikle bilgisarınızda node.js, npm, postgresql ve redisin kurulu olması gerekmektedir.**
+- **Uygulamayı İndirmek İçin :**
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+git clone https://github.com/YusufDagdeviren/question-and-answer-platform.git
+```
 
-### `npm test`
+## **Kütüphanelerin Yüklenmesi**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Çalıştırmadan önce gerekli kütüphanelerin yüklenmesi gerekir. 
 
-### `npm run build`
+- Uygulama içindeki back-End klasörü içindeyken terminalde aşağıdaki komutu kullanarak bu kütüphaneleri yükleyin.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm install
+```
+## Uygulamanın Çalıştırılması
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### **.env Dosyasının ayarlanması**
+- back-end dizinine girip .env klasörü oluşturmanız gerekiyor ve aşağıdaki bilgileri kendinize uygun bir şekilde girmeniz gerekiyor.
+```bash
+DB_HOST="localhost"
+DB_USER="postgres"
+DB_PASSWORD="YOUR_PASSWORD"
+DB_NAME="YOUR_DB_NAME"
+PORT=4000
+JWT_SECRET="YOUR_JWT_SECRET_KEY"
+CSRF_SECRET_KEY="YOUR_CSRF_SECRET_KEY"
+ACCESS_TOKEN_LIFE=15m
+REFRESH_TOKEN_LIFE=15d
+```
+*JWT_SECRET ve CSRF_SECRET_KEY kısımlarını kimseyle paylaşmamak şartıyla istediğiniz bilgiyi girebilirsiniz*
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Uygulama içindeki back-end klasörü içindeyken terminalde aşağıdaki komutu kullanarak Back-End’i çalıştırın.
 
-### `npm run eject`
+```bash
+npm start 
+```
+Uygulama artık local’inizde çalışır halde.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Docker ile Projeyi Çalıştırma
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Projeyi Docker konteynerinde çalıştırmak için aşağıdaki adımları izleyebilirsiniz:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Ön Koşullar
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- [Docker](https://www.docker.com/) kurulu olmalıdır.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. git ile clone'ladığınız dosyaya terminalinizden girin.
+2. back-end klasörüne geçiş yaptıktan sonra terminalde aşağıdaki komutu çalıştırın.
+```bash
+docker-compose up -d
+```
+3. Tarayıcınızda http://127.0.0.1:8080/ e bağlanın. eğer ekranda Cannot GET / yazısını gördüyseniz uygulamanız ayağa kalkmış demektir.
